@@ -2,7 +2,6 @@ version: '3.7'
 
 networks:
   jboss-app-net-dev:
-  #jboss-proxy-net-dev:
 
 services:
   jboss-eap-server-01:
@@ -14,7 +13,6 @@ services:
       - JBOSS_PROFILE_NAME=standalone-ha.xml
     networks:
       - jboss-app-net-dev
-    #  - jboss-proxy-net-dev
     ports:    
       - 19990:9990
 
@@ -27,7 +25,6 @@ services:
       - JBOSS_PROFILE_NAME=standalone-ha.xml    
     networks:
       - jboss-app-net-dev
-    #  - jboss-proxy-net-dev
     ports:     
       - 29990:9990
 
@@ -38,6 +35,5 @@ services:
       - ./proxy/standalone-jboss-nginx.conf:/etc/nginx/conf.d/jboss.conf
     networks:
       - jboss-app-net-dev
-    #  - jboss-proxy-net-dev
     ports:
       - 80:80
