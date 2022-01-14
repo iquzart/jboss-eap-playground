@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
-<host xmlns="urn:jboss:domain:8.0" name="jboss-eap-node-dc">
+<host xmlns="urn:jboss:domain:8.0" name="master">
     <extensions>
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.wildfly.extension.core-management"/>
@@ -81,8 +81,14 @@
         </jvm>
     </jvms>
     <servers>
-        <server name="dev-instance-01" group="development-server-group">
+        <server name="server-one" group="main-server-group"/>
+        <server name="server-two" group="main-server-group" auto-start="true">
+            <jvm name="default"/>
             <socket-bindings port-offset="150"/>
+        </server>
+        <server name="server-three" group="other-server-group" auto-start="false">
+            <jvm name="default"/>
+            <socket-bindings port-offset="250"/>
         </server>
     </servers>
     <profile>

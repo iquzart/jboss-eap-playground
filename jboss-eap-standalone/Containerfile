@@ -1,0 +1,100 @@
+
+# Argumnet variables
+ARG \
+    JBOSS_EAP_VERSION="7.2.0" \
+    JBOSS_EAP_PATCH_VERSION="7.2.9" \
+    JAVA_VERSION="1.8.0" \
+    JBOSS_USERNAME="jboss" \
+    JBOSS_INSTALL_DIR="/opt/app/jboss-eap" \
+    JBOSS_ADMIN_USER="admin" \
+    JBOSS_ADMIN_USER_PASSWORD="admin" \
+    JBOSS_PROFILE_NAME="standalone-ha.xml"
+
+# Stage Unzip
+FROM redhat/ubi8 as builder
+
+ARG JBOSS_EAP_VERSION
+
+# Install unzip
+RUN dnf -y install unzip
+
+# Add JBoss EAP zip
+ADD jboss-eap-${JBOSS_EAP_VERSION}.zip /tmp/artifacts/jboss-eap-${JBOSS_EAP_VERSION}.zip
+
+# Unzip Jboss eap zip file
+RUN unzip /tmp/artifacts/jboss-eap-${JBOSS_EAP_VERSION}.zip -d /tmp/artifacts/extract
+
+# Stage Package 
+FROM redhat/ubi8
+
+# Argumnet variables
+ARG \
+    JBOSS_EAP_VERSION \
+    JBOSS_EAP_PATCH_VERSION \
+    JAVA_VERSION \
+    JBOSS_USERNAME \
+    JBOSS_INSTALL_DIR \
+    JBOSS_ADMIN_USER \
+    JBOSS_ADMIN_USER_PASSWORD \
+    JBOSS_PROFILE_NAME
+
+# maintainer info
+LABEL \
+     maintainer="Muhammed Iqbal <iquzart@hotmail.com>" \
+     jboss_eap_version=${JBOSS_EAP_VERSION} \
+     jboss_install_directory=${JBOSS_INSTALL_DIR} \
+     java_version=${JAVA_VERSION}
+
+# Update OS
+RUN dnf -y update && \
+    dnf -y install curl java-${JAVA_VERSION}-openjdk-devel xmlstarlet&& \
+    dnf clean all
+
+# Create jboss installation directory
+RUN mkdir -p ${JBOSS_INSTALL_DIR}
+
+# Create application user
+RUN useradd -m ${JBOSS_USERNAME}
+
+# Copy the artifact extract to jboss install directory
+COPY  --from=builder /tmp/artifacts/extract/jboss-eap-* ${JBOSS_INSTALL_DIR}
+
+# Installation directory access for jboss application user
+RUN chown ${JBOSS_USERNAME}:${JBOSS_USERNAME} -R ${JBOSS_INSTALL_DIR} && \
+    chmod 775 -R ${JBOSS_INSTALL_DIR}
+
+# Switch to installation directory
+WORKDIR ${JBOSS_INSTALL_DIR}
+
+# Switch to jboss user
+USER ${JBOSS_USERNAME}
+
+# Set jboss home and profile environments
+ENV \
+    JBOSS_HOME="${JBOSS_INSTALL_DIR}" \
+    JBOSS_PROFILE_NAME="${JBOSS_PROFILE_NAME}" 
+
+# Create jboss admin user
+RUN $JBOSS_HOME/bin/add-user.sh ${JBOSS_ADMIN_USER} ${JBOSS_ADMIN_USER_PASSWORD} --silent
+
+# Copy Patch for EAP
+COPY jboss-eap-${JBOSS_EAP_PATCH_VERSION}-patch.zip /tmp/jboss-eap-${JBOSS_EAP_PATCH_VERSION}-patch.zip
+
+# Install jboss eap patch
+RUN $JBOSS_HOME/bin/jboss-cli.sh --command="patch apply /tmp/jboss-eap-${JBOSS_EAP_PATCH_VERSION}-patch.zip"
+
+# Cleanup the patch file
+USER root
+RUN rm -f /tmp/jboss-eap-${JBOSS_EAP_PATCH_VERSION}-patch.zip
+
+# Switch to jboss user
+USER ${JBOSS_USERNAME}
+
+# Expose jboss ports
+EXPOSE 8080 8443 9990 8009 7600
+
+# Setup scripts
+COPY --chown=${JBOSS_USERNAME}:${JBOSS_USERNAME} scripts $JBOSS_HOME/scripts
+
+# Start application
+CMD ["scripts/docker-entrypoint.d/start-jboss-eap.sh"]

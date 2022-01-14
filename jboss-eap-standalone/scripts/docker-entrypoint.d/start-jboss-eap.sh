@@ -49,7 +49,6 @@ domain () {
     fi
 }
 
-
 if [[ "$JBOSS_PROFILE_NAME" =~ ^standalone.* ]]; then
     standalone
 elif [[ "$JBOSS_PROFILE_NAME" =~ ^host.* ]]; then
