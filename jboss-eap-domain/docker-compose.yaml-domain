@@ -1,0 +1,139 @@
+version: '3.7'
+
+networks:
+  jboss-net-dev:
+
+volumes:
+    jboss-eap-node-dc-domain-configs: 
+       driver: local
+       driver_opts:
+           o: bind
+           type: none
+           device: ./runtime-node-configs/jboss-eap-node-dc/configuration
+
+    jboss-eap-node-01-domain-configs: 
+       driver: local
+       driver_opts:
+           o: bind
+           type: none
+           device: ./runtime-node-configs/jboss-eap-node-01/configuration
+
+    jboss-eap-node-02-domain-configs: 
+       driver: local
+       driver_opts:
+           o: bind
+           type: none
+           device: ./runtime-node-configs/jboss-eap-node-02/configuration
+
+    jboss-eap-node-03-domain-configs: 
+       driver: local
+       driver_opts:
+           o: bind
+           type: none
+           device: ./runtime-node-configs/jboss-eap-node-03/configuration
+
+    jboss-eap-node-04-domain-configs: 
+       driver: local
+       driver_opts:
+           o: bind
+           type: none
+           device: ./runtime-node-configs/jboss-eap-node-04/configuration
+
+services:
+  jboss-eap-node-dc:
+    image: diquzart/jboss-eap-domain:7.2.9
+    container_name: jboss-eap-node-dc
+    hostname: jboss-eap-node-dc
+    restart: unless-stopped
+    volumes:
+      - jboss-eap-node-dc-domain-configs:/opt/app/jboss-eap/domain/configuration
+    environment: 
+      - JBOSS_PROFILE_NAME=host-master.xml
+      - JBOSS_CLUSTER_USER=cluster-admin
+      - JBOSS_CLUSTER_USER_PASSWORD=P@ssw0rd
+    networks:
+      - jboss-net-dev
+    ports:
+      - 9990:9990
+
+  jboss-eap-node-01:
+    image: diquzart/jboss-eap-domain:7.2.9
+    container_name: jboss-eap-node-01
+    hostname: jboss-eap-node-01
+    restart: unless-stopped
+    volumes:
+      - jboss-eap-node-01-domain-configs:/opt/app/jboss-eap/domain/configuration
+    depends_on:
+      - jboss-eap-node-dc
+    environment: 
+      - JBOSS_PROFILE_NAME=host-slave.xml
+      - JBOSS_CLUSTER_USER=cluster-admin
+      - JBOSS_CLUSTER_USER_PASSWORD=P@ssw0rd
+    networks:
+      - jboss-net-dev
+
+  jboss-eap-node-02:
+    image: diquzart/jboss-eap-domain:7.2.9
+    container_name: jboss-eap-node-02
+    hostname: jboss-eap-node-02
+    restart: unless-stopped
+    volumes:
+      - jboss-eap-node-02-domain-configs:/opt/app/jboss-eap/domain/configuration
+    depends_on:
+      - jboss-eap-node-dc    
+    environment: 
+      - JBOSS_PROFILE_NAME=host-slave.xml
+      - JBOSS_CLUSTER_USER=cluster-admin
+      - JBOSS_CLUSTER_USER_PASSWORD=P@ssw0rd
+    networks:
+      - jboss-net-dev
+
+  jboss-eap-node-03:
+    image: diquzart/jboss-eap-domain:7.2.9
+    container_name: jboss-eap-node-03
+    hostname: jboss-eap-node-03
+    restart: unless-stopped
+    volumes:
+      - jboss-eap-node-03-domain-configs:/opt/app/jboss-eap/domain/configuration
+    depends_on:
+      - jboss-eap-node-dc    
+    environment: 
+      - JBOSS_PROFILE_NAME=host-slave.xml
+      - JBOSS_CLUSTER_USER=cluster-admin
+      - JBOSS_CLUSTER_USER_PASSWORD=P@ssw0rd
+    networks:
+      - jboss-net-dev
+
+
+  jboss-eap-node-04:
+    image: diquzart/jboss-eap-domain:7.2.9
+    container_name: jboss-eap-node-04
+    hostname: jboss-eap-node-04
+    restart: unless-stopped
+    volumes:
+      - jboss-eap-node-04-domain-configs:/opt/app/jboss-eap/domain/configuration
+    depends_on:
+      - jboss-eap-node-dc    
+    environment: 
+      - JBOSS_PROFILE_NAME=host-slave.xml
+      - JBOSS_CLUSTER_USER=cluster-admin
+      - JBOSS_CLUSTER_USER_PASSWORD=P@ssw0rd
+    networks:
+      - jboss-net-dev
+
+
+  proxy-nginx: 
+    image: nginx:latest
+    container_name: static-proxy-nginx
+    depends_on:
+      - jboss-eap-node-dc 
+      - jboss-eap-node-01 
+      - jboss-eap-node-02
+      - jboss-eap-node-03
+      - jboss-eap-node-04
+    volumes:
+      - ./proxy/domain-jboss-nginx.conf:/etc/nginx/conf.d/jboss.conf
+    networks:
+      - jboss-net-dev
+    ports:
+      - 80:80
