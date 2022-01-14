@@ -10,8 +10,22 @@ The repo is for local development and eap infrastructure tests
 
 ## Build JBoss EAP Conainer Image
 
-1. Download the zip installer and pach for the jboss-eap 7.
-2. 
+step: 1
+Download the zip installer and pach for the jboss-eap 7.
+ 
+step: 2 
 ```
 docker build -t diquzart/jboss-eap:7.2.9 -f .\Containerfile .
+```
+
+step: 3
+Update docker-compose file and run.
+- standalone
+```
+docker-compose.exe -f .\docker-compose.yaml-standalone up
+```
+
+- Domain
+```
+docker-compose.exe -f .\docker-compose.yaml-domain up
 ```

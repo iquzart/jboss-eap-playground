@@ -1852,9 +1852,6 @@
                 <heap size="1000m" max-size="1000m"/>
             </jvm>
             <socket-binding-group ref="full-ha-sockets"/>
-            <deployments>
-                <deployment name="httpsessionlogin.war" runtime-name="httpsessionlogin.war"/>
-            </deployments>
             <system-properties>
                 <property name="jboss.cluster.tcp.initial_hosts" value="jboss-eap-node-01[7600],jboss-eap-node-02[7600],jboss-eap-node-03[7600]"/>
             </system-properties>

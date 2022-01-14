@@ -1841,12 +1841,20 @@
             <socket-binding name="modcluster" interface="private" multicast-address="${jboss.modcluster.multicast.address:224.0.1.105}" multicast-port="23364"/>
         </socket-binding-group>
     </socket-binding-groups>
+    <deployments>
+        <deployment name="httpsessionlogin.war" runtime-name="httpsessionlogin.war">
+            <content sha1="5334f67533ef31230409df4aa44bfc2a90954698"/>
+        </deployment>
+    </deployments>
     <server-groups>
         <server-group name="production-server-group" profile="full-ha">
             <jvm name="default">
                 <heap size="1000m" max-size="1000m"/>
             </jvm>
             <socket-binding-group ref="full-ha-sockets"/>
+            <deployments>
+                <deployment name="httpsessionlogin.war" runtime-name="httpsessionlogin.war"/>
+            </deployments>
             <system-properties>
                 <property name="jboss.cluster.tcp.initial_hosts" value="jboss-eap-node-01[7600],jboss-eap-node-02[7600],jboss-eap-node-03[7600]"/>
             </system-properties>
