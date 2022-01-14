@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
-<host xmlns="urn:jboss:domain:8.0" name="jboss-eap-node-dc">
+<host xmlns="urn:jboss:domain:8.0">
     <extensions>
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.wildfly.extension.core-management"/>
@@ -9,6 +9,9 @@
     <management>
         <security-realms>
             <security-realm name="ManagementRealm">
+                <server-identities>
+                    <secret value="UEBzc3cwcmQ="/>
+                </server-identities>
                 <authentication>
                     <local default-user="$local" skip-group-loading="true"/>
                     <properties path="mgmt-users.properties" relative-to="jboss.domain.config.dir"/>
@@ -59,7 +62,11 @@
         </management-interfaces>
     </management>
     <domain-controller>
-        <local/>
+        <remote security-realm="ManagementRealm" username="cluster-admin">
+            <discovery-options>
+                <static-discovery name="primary" protocol="${jboss.domain.master.protocol:remote+http}" host="${jboss.domain.master.address}" port="${jboss.domain.master.port:9990}"/>
+            </discovery-options>
+        </remote>
     </domain-controller>
     <interfaces>
         <interface name="management">
@@ -81,9 +88,7 @@
         </jvm>
     </jvms>
     <servers>
-        <server name="dev-instance-01" group="development-server-group">
-            <socket-bindings port-offset="150"/>
-        </server>
+        <server name="instance-02" group="production-server-group"/>
     </servers>
     <profile>
         <subsystem xmlns="urn:jboss:domain:core-management:1.0"/>

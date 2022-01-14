@@ -1,0 +1,43 @@
+version: '3.7'
+
+networks:
+  jboss-app-net-dev:
+  #jboss-proxy-net-dev:
+
+services:
+  jboss-eap-server-01:
+    image: diquzart/jboss-eap:7.2.9
+    container_name: jboss-eap-server-01
+    hostname: jboss-eap-server-01
+    restart: unless-stopped
+    environment: 
+      - JBOSS_PROFILE_NAME=standalone-ha.xml
+    networks:
+      - jboss-app-net-dev
+    #  - jboss-proxy-net-dev
+    ports:    
+      - 19990:9990
+
+  jboss-eap-server-02:
+    image: diquzart/jboss-eap:7.2.9
+    container_name: jboss-eap-server-02
+    hostname: jboss-eap-server-02
+    restart: unless-stopped
+    environment: 
+      - JBOSS_PROFILE_NAME=standalone-ha.xml    
+    networks:
+      - jboss-app-net-dev
+    #  - jboss-proxy-net-dev
+    ports:     
+      - 29990:9990
+
+  proxy-nginx: 
+    image: nginx:latest
+    container_name: static-proxy-nginx
+    volumes:
+      - ./proxy/standalone-jboss-nginx.conf:/etc/nginx/conf.d/jboss.conf
+    networks:
+      - jboss-app-net-dev
+    #  - jboss-proxy-net-dev
+    ports:
+      - 80:80

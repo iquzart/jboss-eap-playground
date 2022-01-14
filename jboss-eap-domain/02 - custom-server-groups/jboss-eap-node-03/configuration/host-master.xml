@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
-<host xmlns="urn:jboss:domain:8.0" name="jboss-eap-node-dc">
+<host xmlns="urn:jboss:domain:8.0" name="master">
     <extensions>
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.wildfly.extension.core-management"/>
@@ -65,9 +65,6 @@
         <interface name="management">
             <inet-address value="${jboss.bind.address.management:127.0.0.1}"/>
         </interface>
-        <interface name="public">
-            <inet-address value="${jboss.bind.address:127.0.0.1}"/>
-        </interface>
     </interfaces>
     <jvms>
         <jvm name="default">
@@ -80,11 +77,6 @@
             </jvm-options>
         </jvm>
     </jvms>
-    <servers>
-        <server name="dev-instance-01" group="development-server-group">
-            <socket-bindings port-offset="150"/>
-        </server>
-    </servers>
     <profile>
         <subsystem xmlns="urn:jboss:domain:core-management:1.0"/>
         <subsystem xmlns="urn:wildfly:elytron:4.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
